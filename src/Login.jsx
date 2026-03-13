@@ -1,37 +1,39 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "./loginShema"; // Importando a validação
 import "./Login.css";
 
 function Login() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (email && password) {
-      console.log("Login:", email, password);
-      alert("Login realizado!");
-    } else {
-      alert("Preencha todos os campos.");
-    }
+  const onSubmit = async (data) => {
+    // Simulando um delay de rede (2 segundos)
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    
+    console.log("Dados Validados pelo Zod:", data);
+    alert("Login realizado com sucesso!");
   };
 
   return (
     <div className="login-container">
-
-      <form className="login-form" onSubmit={handleSubmit}>
-
+      <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
         <h1>Fazer Login</h1>
 
         <div className="input-group">
           <label>E-mail</label>
           <input
-            type="email"
+            type="text" // Usamos text para o Zod validar o formato e-mail
             placeholder="seu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            {...register("email")}
+            className={errors.email ? "input-error" : ""}
           />
+          {errors.email && <span className="error-msg">{errors.email.message}</span>}
         </div>
 
         <div className="input-group">
@@ -39,17 +41,16 @@ function Login() {
           <input
             type="password"
             placeholder="********"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register("password")}
+            className={errors.password ? "input-error" : ""}
           />
+          {errors.password && <span className="error-msg">{errors.password.message}</span>}
         </div>
 
-        <button type="submit">
-          Entrar
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Carregando..." : "Entrar"}
         </button>
-
       </form>
-
     </div>
   );
 }
